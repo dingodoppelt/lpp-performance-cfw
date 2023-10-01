@@ -19,5 +19,5 @@ jobs:
       uses: actions/upload-artifact@v3.1.3
       with:
         name: cfw.syx
-        path: ./build/
+        path: ./build/cfw.syx
         if-no-files-found: warn
