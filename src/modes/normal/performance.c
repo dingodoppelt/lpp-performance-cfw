@@ -69,7 +69,8 @@ void performance_surface_event(u8 p, u8 v, u8 x, u8 y) {
 		if (v != 0) mode_update(mode_setup);
 				
 	} else { // Send MIDI input to DAW
-		send_midi(USBSTANDALONE, (v == 0)? 0x8F : 0x9F, (settings.performance_xy_enabled)? p : xy_dr[p], v);
+		send_midi(USBSTANDALONE, (v == 0)? 0x8F : 0x9F, (settings.performance_xy_enabled)? p : xy_dr[p] + 16, v);
+		performance_led(0xF, p, v, 1);
 	}
 }
 
