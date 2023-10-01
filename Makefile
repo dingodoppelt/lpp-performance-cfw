@@ -1,25 +1,3 @@
-ifeq ($(OS),Windows_NT)
-
-define rmdir
-	if exist "$(1)" rd /s /q "$(1)"
-endef
-
-define mkdir
-	if not exist "$(1)" mkdir "$(1)"
-endef
-
-else
-
-define rmdir
-	rm -rf "$(1)"
-endef
-
-define mkdir
-	mkdir -p "$(1)"
-endef
-
-endif
-
 BUILDDIR = build
 
 TOOLS = tools
@@ -46,11 +24,13 @@ OBJECTS = $(addprefix $(BUILDDIR)/, $(addsuffix .o, $(basename $(SOURCES))))
 # output files
 SYX = $(BUILDDIR)/cfw.syx
 ELF = $(BUILDDIR)/cfw.elf
-BIN = $(BUILDDIR)/cfw.bin
-BINTOSYX = $(TOOLS)/bintosyx
+HEX = $(BUILDDIR)/cfw.hex
+HEXTOSYX = $(BUILDDIR)/hextosyx
+SIMULATOR = $(BUILDDIR)/simulator
 
 # tools
 HOST_GPP = g++
+HOST_GCC = gcc
 CC = arm-none-eabi-gcc
 LD = arm-none-eabi-gcc
 OBJCOPY = arm-none-eabi-objcopy
@@ -68,11 +48,15 @@ LDFLAGS += -T$(LDSCRIPT) -u _start -u _Minimum_Stack_Size  -mcpu=cortex-m3 -mthu
 all: $(SYX)
 
 # build the final sysex file from the ELF - run the simulator first
-$(SYX): $(BIN)
-	./$(BINTOSYX) /pro 000 $(BIN) $(SYX)
+$(SYX): $(HEX) $(HEXTOSYX)
+	./$(HEXTOSYX) $(HEX) $(SYX)
 
-$(BIN): $(ELF)
-	$(OBJCOPY) -O binary $< $@
+# build the tool for conversion of ELF files to sysex, ready for upload to the unit
+$(HEXTOSYX):
+	$(HOST_GPP) -Ofast -std=c++0x -I./$(TOOLS)/libintelhex/include ./$(TOOLS)/libintelhex/src/intelhex.cc $(TOOLS)/hextosyx.cpp -o $(HEXTOSYX)
+
+$(HEX): $(ELF)
+	$(OBJCOPY) -O ihex $< $@
 
 $(ELF): $(OBJECTS)
 	$(LD) $(LDFLAGS) -o $@ $(OBJECTS) $(LIB)
@@ -82,8 +66,8 @@ DEPENDS := $(OBJECTS:.o=.d)
 -include $(DEPENDS)
 
 $(BUILDDIR)/%.o: %.c
-	$(call mkdir,$(dir $@))
+	mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -MMD -o $@ $<
 
 clean:
-	$(call rmdir,$(BUILDDIR))
+	rm -rf $(BUILDDIR)
