@@ -65,12 +65,13 @@ void performance_init() {
 void performance_timer_event() {}
 
 void performance_surface_event(u8 p, u8 v, u8 x, u8 y) {
-    if (p == 0) { // Enter Setup mode
-        if (v != 0) mode_update(mode_setup);
-                
-    } else { // Send MIDI input to DAW
-        send_midi(USBSTANDALONE, (v == 0)? 0x8F : 0x9F, (settings.performance_xy_enabled)? p : xy_dr[p], v);
-    }
+	if (p == 0) { // Enter Setup mode
+		if (v != 0) mode_update(mode_setup);
+				
+	} else { // Send MIDI input to DAW
+		send_midi(USBSTANDALONE, (v == 0)? 0x8F : 0x9F, (settings.performance_xy_enabled)? p : xy_dr[p] + 16, v);
+		performance_led(0xF, p, v, 1);
+	}
 }
 
 void performance_midi_event(u8 port, u8 t, u8 ch, u8 p, u8 v) {
