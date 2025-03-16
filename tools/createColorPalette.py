@@ -11,7 +11,7 @@ def bezier(t, control_points):
 
 def create_color_palette(start_color, middle_color, end_color, num_steps):
     color_palette = []
-    for i in range(num_steps):
+    for i in range(1, num_steps):
         t = i / (num_steps - 1)
         bezier_t = bezier(t, [start_color, middle_color, end_color])
         r = int(bezier_t[0])
@@ -50,6 +50,7 @@ file_name = input("Geben Sie den Dateinamen für die Farbpalette ein: ")
 
 # Die Farbpalette im gewünschten Format in die Datei schreiben
 with open(file_name, 'w') as file:
+    file.write("0, 0 0 0;\n")
     for entry in palette:
         index, r, g, b = entry
         file.write(f"{index}, {r} {g} {b};\n")
